@@ -1,0 +1,51 @@
+server {
+        listen 0.0.0.0:80 default_server;
+
+        root /var/www/html/public;
+        charset utf-8;
+        index index.php;
+
+        sendfile on;
+        send_timeout 600s;
+
+        client_max_body_size 1024m;
+
+        add_header 'Access-Control-Allow-Origin' "*" always;
+        add_header 'Access-Control-Allow_Credentials' 'true' always;
+        add_header 'Access-Control-Allow-Headers' 'Authorization,Content-Type,X-Device-Id,X-Device-Type,X-Vendor-Code,User-Id' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+
+        location / {
+            if ($request_method = OPTIONS ) {
+                add_header 'Access-Control-Allow-Origin' "*" always;
+                add_header 'Access-Control-Allow_Credentials' 'true' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization,Content-Type,X-Device-Id,X-Device-Type,X-Vendor-Code,User-Id' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+                add_header Content-Length 0;
+                add_header Content-Type text/plain;
+                return 200;
+            }
+
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        location /file/ {
+                root /srv/backend/application;
+        }
+
+        location ~ ^/index.php$ {
+                fastcgi_index  index.php;
+                fastcgi_keep_conn on;
+                fastcgi_pass   localhost:9000;
+                fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                include        fastcgi_params;
+                fastcgi_param  HOME $document_root;
+                fastcgi_param  DOCUMENT_ROOT $document_root;
+                fastcgi_buffers 16 16k;
+                fastcgi_buffer_size 32k;
+        }
+
+        location ~ /\.ht {
+                deny all;
+        }
+} 

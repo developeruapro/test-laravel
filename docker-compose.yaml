@@ -1,0 +1,43 @@
+version: '2.1'
+
+services:
+  backend-app:
+    build:
+      context: ./docker
+    ports:
+      - 100:80
+    volumes:
+      - ./app:/var/www/html:z
+    links:
+      - 'percona-db'
+    networks:
+      app_net:
+        ipv4_address: 172.200.0.10
+
+  percona-db:
+    image: percona
+    ports:
+      - 3306:3306
+    volumes:
+      - percona:/var/lib/mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+      MYSQL_ROOT_PASSWORD: "test"
+      MYSQL_USER: 'test'
+      MYSQL_PASSWORD: 'test'
+      MYSQL_DATABASE: 'test'
+    networks:
+      app_net:
+        ipv4_address: 172.200.0.20
+volumes:
+  percona:
+
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.200.0.0/24
+          gateway: 172.200.0.1
+
